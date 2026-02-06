@@ -182,6 +182,57 @@ class MockOktaClient:
     async def list_app_links(self, user_id: str):
         return [], MockOktaResponse(), None
 
+    async def list_applications(self, query_params: Optional[Dict] = None):
+        apps = [type("MockApp", (), {"id": "0oa1abc123", "name": "Test App", "label": "Test Application"})]
+        return apps, MockOktaResponse(), None
+
+    async def get_application(self, app_id: str, query_params: Optional[Dict] = None):
+        app = type("MockApp", (), {"id": app_id, "name": "Test App", "label": "Test Application"})
+        return app, MockOktaResponse(), None
+
+    async def create_application(self, app_config: Dict, query_params: Optional[Dict] = None):
+        app = type(
+            "MockApp", (), {"id": "0oa1abc123", "name": app_config.get("name"), "label": app_config.get("label")}
+        )
+        return app, MockOktaResponse(), None
+
+    async def update_application(self, app_id: str, app_config: Dict):
+        app = type("MockApp", (), {"id": app_id, "name": app_config.get("name"), "label": app_config.get("label")})
+        return app, MockOktaResponse(), None
+
+    async def delete_application(self, app_id: str):
+        return None, None
+
+    async def activate_application(self, app_id: str):
+        return None, None
+
+    async def deactivate_application(self, app_id: str):
+        return None, None
+
+    async def list_application_users(self, app_id, query_params=None):
+        return self.users, MockOktaResponse(), None
+
+    async def get_application_user(self, app_id, user_id):
+        return MockUser(id=user_id), MockOktaResponse(), None
+
+    async def assign_user_to_application(self, app_id, body):
+        return MockUser(id=body.get("id", "test")), MockOktaResponse(), None
+
+    async def delete_application_user(self, app_id, user_id):
+        return None, None
+
+    async def list_application_group_assignments(self, app_id, query_params=None):
+        return self.groups, MockOktaResponse(), None
+
+    async def get_application_group_assignment(self, app_id, group_id):
+        return MockGroup(id=group_id), MockOktaResponse(), None
+
+    async def create_application_group_assignment(self, app_id, group_id, body):
+        return MockGroup(id=group_id), MockOktaResponse(), None
+
+    async def delete_application_group_assignment(self, app_id, group_id):
+        return None, None
+
 
 class MockOktaAuthManager:
     """Mock OktaAuthManager for testing."""

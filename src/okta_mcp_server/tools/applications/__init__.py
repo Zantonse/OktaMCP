@@ -9,22 +9,38 @@
 
 from okta_mcp_server.tools.applications.applications import (
     activate_application,
+    assign_group_to_application,
+    assign_user_to_application,
     confirm_delete_application,
     create_application,
     deactivate_application,
     delete_application,
     get_application,
+    get_application_group,
+    get_application_user,
+    list_application_groups,
+    list_application_users,
     list_applications,
+    remove_group_from_application,
+    remove_user_from_application,
     update_application,
 )
 
 __all__ = [
     "activate_application",
+    "assign_group_to_application",
+    "assign_user_to_application",
     "confirm_delete_application",
     "create_application",
     "deactivate_application",
     "delete_application",
     "get_application",
+    "get_application_group",
+    "get_application_user",
+    "list_application_groups",
+    "list_application_users",
     "list_applications",
+    "remove_group_from_application",
+    "remove_user_from_application",
     "update_application",
 ]
