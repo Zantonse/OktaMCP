@@ -605,3 +605,144 @@ async def reset_password(user_id: str, send_email: bool = True, ctx: Context = N
     except Exception as e:
         logger.error(f"Exception while resetting password for user {user_id}: {type(e).__name__}: {e}")
         return error_response(str(e))
+
+
+@mcp.tool()
+async def list_user_groups(
+    user_id: str,
+    ctx: Context,
+    fetch_all: bool = False,
+    after: Optional[str] = None,
+    limit: Optional[int] = None,
+) -> dict:
+    """List all groups that a user belongs to with pagination support.
+
+    Parameters:
+        user_id (str, required): The ID of the user.
+        fetch_all (bool, optional): If True, automatically fetch all pages. Default: False.
+        after (str, optional): Pagination cursor.
+        limit (int, optional): Maximum per page (min 20, max 100).
+
+    Returns:
+        Dict containing:
+        - items: List of groups
+        - total_fetched: Number returned
+        - has_more: Boolean for more results
+        - next_cursor: Cursor for next page
+        - fetch_all_used: Boolean
+        - pagination_info: Metadata (when fetch_all=True)
+    """
+    logger.info(f"Listing groups for user: {user_id}")
+    logger.debug(f"fetch_all: {fetch_all}, after: '{after}', limit: {limit}")
+
+    # Validate limit parameter range
+    if limit is not None:
+        if limit < 20:
+            logger.warning(f"Limit {limit} is below minimum (20), setting to 20")
+            limit = 20
+        elif limit > 100:
+            logger.warning(f"Limit {limit} exceeds maximum (100), setting to 100")
+            limit = 100
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+        query_params = build_query_params(after=after, limit=limit)
+
+        logger.debug("Calling Okta API to list user groups")
+        groups, response, err = await client.list_user_groups(user_id, query_params)
+
+        if err:
+            logger.error(f"Okta API error: {err}")
+            return error_response(str(err))
+
+        if not groups:
+            logger.info("No groups found")
+            return create_paginated_response([], response, fetch_all_used=fetch_all)
+
+        if fetch_all and response and hasattr(response, "has_next") and response.has_next():
+            logger.info(f"fetch_all=True, auto-paginating from initial {len(groups)} groups")
+            all_groups, pagination_info = await paginate_all_results(response, groups)
+            pages_count = pagination_info["pages_fetched"]
+            logger.info(f"Retrieved {len(all_groups)} groups across {pages_count} pages")
+            return create_paginated_response(
+                all_groups, response, fetch_all_used=True, pagination_info=pagination_info
+            )
+        else:
+            logger.info(f"Successfully retrieved {len(groups)} groups")
+            return create_paginated_response(groups, response, fetch_all_used=fetch_all)
+
+    except Exception as e:
+        logger.error(f"Exception: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def list_user_apps(
+    user_id: str,
+    ctx: Context,
+    fetch_all: bool = False,
+    after: Optional[str] = None,
+    limit: Optional[int] = None,
+) -> dict:
+    """List all applications linked to a user with pagination support.
+
+    Parameters:
+        user_id (str, required): The ID of the user.
+        fetch_all (bool, optional): If True, automatically fetch all pages. Default: False.
+        after (str, optional): Pagination cursor.
+        limit (int, optional): Maximum per page (min 20, max 100).
+
+    Returns:
+        Dict containing:
+        - items: List of app links
+        - total_fetched: Number returned
+        - has_more: Boolean for more results
+        - next_cursor: Cursor for next page
+        - fetch_all_used: Boolean
+        - pagination_info: Metadata (when fetch_all=True)
+    """
+    logger.info(f"Listing apps for user: {user_id}")
+    logger.debug(f"fetch_all: {fetch_all}, after: '{after}', limit: {limit}")
+
+    # Validate limit parameter range
+    if limit is not None:
+        if limit < 20:
+            logger.warning(f"Limit {limit} is below minimum (20), setting to 20")
+            limit = 20
+        elif limit > 100:
+            logger.warning(f"Limit {limit} exceeds maximum (100), setting to 100")
+            limit = 100
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        logger.debug("Calling Okta API to list user apps")
+        apps, response, err = await client.list_app_links(user_id)
+
+        if err:
+            logger.error(f"Okta API error: {err}")
+            return error_response(str(err))
+
+        if not apps:
+            logger.info("No apps found")
+            return create_paginated_response([], response, fetch_all_used=fetch_all)
+
+        if fetch_all and response and hasattr(response, "has_next") and response.has_next():
+            logger.info(f"fetch_all=True, auto-paginating from initial {len(apps)} apps")
+            all_apps, pagination_info = await paginate_all_results(response, apps)
+            pages_count = pagination_info["pages_fetched"]
+            logger.info(f"Retrieved {len(all_apps)} apps across {pages_count} pages")
+            return create_paginated_response(
+                all_apps, response, fetch_all_used=True, pagination_info=pagination_info
+            )
+        else:
+            logger.info(f"Successfully retrieved {len(apps)} apps")
+            return create_paginated_response(apps, response, fetch_all_used=fetch_all)
+
+    except Exception as e:
+        logger.error(f"Exception: {type(e).__name__}: {e}")
+        return error_response(str(e))
