@@ -132,6 +132,21 @@ class MockFactor:
     status: str = "ACTIVE"
 
 
+@dataclass
+class MockNetworkZone:
+    """Mock Okta network zone object."""
+
+    id: str = "nzn1abc123"
+    name: str = "Test Zone"
+    type: str = "IP"
+    status: str = "ACTIVE"
+    gateways: list = None
+
+    def __post_init__(self):
+        if self.gateways is None:
+            self.gateways = [{"type": "CIDR", "value": "10.0.0.0/8"}]
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -370,6 +385,27 @@ class MockOktaClient:
 
     async def verify_factor(self, user_id, factor_id, body):
         return {"factorResult": "SUCCESS"}, MockOktaResponse(), None
+
+    async def list_network_zones(self, query_params=None):
+        return [MockNetworkZone()], MockOktaResponse(), None
+
+    async def get_network_zone(self, zone_id):
+        return MockNetworkZone(id=zone_id), MockOktaResponse(), None
+
+    async def create_network_zone(self, body):
+        return MockNetworkZone(), MockOktaResponse(), None
+
+    async def update_network_zone(self, zone_id, body):
+        return MockNetworkZone(id=zone_id), MockOktaResponse(), None
+
+    async def delete_network_zone(self, zone_id):
+        return None, None
+
+    async def activate_network_zone(self, zone_id):
+        return None, None
+
+    async def deactivate_network_zone(self, zone_id):
+        return None, None
 
 
 class MockOktaAuthManager:
