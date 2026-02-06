@@ -488,3 +488,120 @@ async def unlock_user(user_id: str, ctx: Context = None) -> dict:
     except Exception as e:
         logger.error(f"Exception while unlocking user {user_id}: {type(e).__name__}: {e}")
         return error_response(str(e))
+
+
+@mcp.tool()
+async def expire_password(user_id: str, ctx: Context = None) -> dict:
+    """Expires the password for a user in the Okta organization.
+
+    This tool expires a user's password, requiring them to reset it on their next login.
+    The user will be prompted to set a new password when they next attempt to access their account.
+
+    Parameters:
+        user_id (str, required): The ID of the user whose password should be expired.
+
+    Returns:
+        Dict with success status and result of the expire password operation.
+    """
+    logger.info(f"Expiring password for user with ID: {user_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+        logger.debug(f"Calling Okta API to expire password for user {user_id}")
+
+        _, err = await client.expire_password(user_id)
+
+        if err:
+            logger.error(f"Okta API error while expiring password for user {user_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully expired password for user: {user_id}")
+        return success_response(
+            {"message": f"Password for user {user_id} has been expired. User must reset on next login."}
+        )
+    except Exception as e:
+        logger.error(f"Exception while expiring password for user {user_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def expire_password_with_temp_password(user_id: str, ctx: Context = None) -> dict:
+    """Expires the password for a user and generates a temporary password in the Okta organization.
+
+    This tool expires a user's password and generates a temporary password that can be used for
+    immediate access. The temporary password is included in the response and should be securely
+    communicated to the user.
+
+    Parameters:
+        user_id (str, required): The ID of the user whose password should be expired.
+
+    Returns:
+        Dict with success status, temporary password, and result of the operation.
+    """
+    logger.info(f"Expiring password and generating temp password for user with ID: {user_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+        logger.debug(f"Calling Okta API to expire password and get temporary password for user {user_id}")
+
+        result, _, err = await client.expire_password_and_get_temporary_password(user_id)
+
+        if err:
+            logger.error(f"Okta API error while expiring password for user {user_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully expired password and generated temp password for user: {user_id}")
+        return success_response(
+            {
+                "temp_password": result.temp_password,
+                "message": f"Password expired for user {user_id}. Temporary password has been generated.",
+            }
+        )
+    except Exception as e:
+        logger.error(
+            f"Exception while expiring password with temp password for user {user_id}: {type(e).__name__}: {e}"
+        )
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def reset_password(user_id: str, send_email: bool = True, ctx: Context = None) -> dict:
+    """Resets a user's password in the Okta organization.
+
+    This tool resets a user's password and generates a password reset link. Optionally,
+    the reset link can be automatically sent to the user's email address.
+
+    Parameters:
+        user_id (str, required): The ID of the user whose password should be reset.
+        send_email (bool, optional): Whether to send the password reset link to the user's email. Default: True.
+
+    Returns:
+        Dict with success status, reset URL (if send_email is False), and result of the operation.
+    """
+    logger.info(f"Resetting password for user with ID: {user_id}")
+    logger.debug(f"send_email: {send_email}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+        logger.debug(f"Calling Okta API to reset password for user {user_id}")
+
+        result, _, err = await client.reset_password(user_id, {"sendEmail": send_email})
+
+        if err:
+            logger.error(f"Okta API error while resetting password for user {user_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully reset password for user: {user_id}")
+        response_dict = {"message": f"Password reset initiated for user {user_id}."}
+        if result and hasattr(result, "reset_password_url"):
+            response_dict["reset_url"] = result.reset_password_url
+        return success_response(response_dict)
+    except Exception as e:
+        logger.error(f"Exception while resetting password for user {user_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
