@@ -15,8 +15,23 @@ import pytest
 
 
 @dataclass
+class MockTempPassword:
+    """Mock temporary password response."""
+
+    temp_password: str = "TempPass123!"
+
+
+@dataclass
+class MockResetToken:
+    """Mock password reset token response."""
+
+    reset_password_url: str = "https://test.okta.com/reset/token"
+
+
+@dataclass
 class MockUserProfile:
     """Mock Okta user profile."""
+
     login: str = "test@example.com"
     email: str = "test@example.com"
     firstName: str = "Test"
@@ -27,6 +42,7 @@ class MockUserProfile:
 @dataclass
 class MockUser:
     """Mock Okta user object."""
+
     id: str = "00u1abc123def456"
     status: str = "ACTIVE"
     profile: MockUserProfile = None
@@ -39,6 +55,7 @@ class MockUser:
 @dataclass
 class MockGroupProfile:
     """Mock Okta group profile."""
+
     name: str = "Test Group"
     description: str = "A test group"
 
@@ -46,6 +63,7 @@ class MockGroupProfile:
 @dataclass
 class MockGroup:
     """Mock Okta group object."""
+
     id: str = "00g1abc123def456"
     profile: MockGroupProfile = None
 
@@ -133,6 +151,36 @@ class MockOktaClient:
 
     async def remove_user_from_group(self, group_id: str, user_id: str):
         return None, None
+
+    async def activate_user(self, user_id: str):
+        return None, None
+
+    async def reactivate_user(self, user_id: str):
+        return None, None
+
+    async def suspend_user(self, user_id: str):
+        return None, None
+
+    async def unsuspend_user(self, user_id: str):
+        return None, None
+
+    async def unlock_user(self, user_id: str):
+        return None, None
+
+    async def expire_password(self, user_id: str):
+        return None, None
+
+    async def expire_password_and_get_temporary_password(self, user_id: str):
+        return MockTempPassword(), None, None
+
+    async def reset_password(self, user_id: str, params: Optional[Dict] = None):
+        return MockResetToken(), None, None
+
+    async def list_user_groups(self, user_id: str, query_params: Optional[Dict] = None):
+        return self.groups, MockOktaResponse(), None
+
+    async def list_app_links(self, user_id: str):
+        return [], MockOktaResponse(), None
 
 
 class MockOktaAuthManager:

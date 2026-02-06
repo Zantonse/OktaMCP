@@ -178,8 +178,239 @@ class TestDeleteDeactivatedUser:
         ):
             from okta_mcp_server.tools.users.users import delete_deactivated_user
 
-            result = await delete_deactivated_user(
-                user_id="00u1abc123def456", ctx=mock_context
-            )
+            result = await delete_deactivated_user(user_id="00u1abc123def456", ctx=mock_context)
 
             assert result.get("success") is True
+
+
+class TestActivateUser:
+    """Tests for activate_user tool."""
+
+    @pytest.mark.asyncio
+    async def test_activate_user_success(self, mock_context, mock_okta_client):
+        """Test successful user activation."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import activate_user
+
+            result = await activate_user(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "activated" in result.get("data", {}).get("message", "").lower()
+
+
+class TestReactivateUser:
+    """Tests for reactivate_user tool."""
+
+    @pytest.mark.asyncio
+    async def test_reactivate_user_success(self, mock_context, mock_okta_client):
+        """Test successful user reactivation."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import reactivate_user
+
+            result = await reactivate_user(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "reactivated" in result.get("data", {}).get("message", "").lower()
+
+
+class TestSuspendUser:
+    """Tests for suspend_user tool."""
+
+    @pytest.mark.asyncio
+    async def test_suspend_user_success(self, mock_context, mock_okta_client):
+        """Test successful user suspension."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import suspend_user
+
+            result = await suspend_user(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "suspended" in result.get("data", {}).get("message", "").lower()
+
+
+class TestUnsuspendUser:
+    """Tests for unsuspend_user tool."""
+
+    @pytest.mark.asyncio
+    async def test_unsuspend_user_success(self, mock_context, mock_okta_client):
+        """Test successful user unsuspension."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import unsuspend_user
+
+            result = await unsuspend_user(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "unsuspended" in result.get("data", {}).get("message", "").lower()
+
+
+class TestUnlockUser:
+    """Tests for unlock_user tool."""
+
+    @pytest.mark.asyncio
+    async def test_unlock_user_success(self, mock_context, mock_okta_client):
+        """Test successful user unlock."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import unlock_user
+
+            result = await unlock_user(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "unlocked" in result.get("data", {}).get("message", "").lower()
+
+
+class TestExpirePassword:
+    """Tests for expire_password tool."""
+
+    @pytest.mark.asyncio
+    async def test_expire_password_success(self, mock_context, mock_okta_client):
+        """Test successful password expiration."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import expire_password
+
+            result = await expire_password(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "expired" in result.get("data", {}).get("message", "").lower()
+
+
+class TestExpirePasswordWithTempPassword:
+    """Tests for expire_password_with_temp_password tool."""
+
+    @pytest.mark.asyncio
+    async def test_expire_password_with_temp_password_success(self, mock_context, mock_okta_client):
+        """Test successful password expiration with temp password generation."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import expire_password_with_temp_password
+
+            result = await expire_password_with_temp_password(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "temp_password" in result.get("data", {})
+            assert result.get("data", {}).get("temp_password") is not None
+
+
+class TestResetPassword:
+    """Tests for reset_password tool."""
+
+    @pytest.mark.asyncio
+    async def test_reset_password_success(self, mock_context, mock_okta_client):
+        """Test successful password reset."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import reset_password
+
+            result = await reset_password(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert result.get("success") is True
+            assert "reset" in result.get("data", {}).get("message", "").lower()
+
+    @pytest.mark.asyncio
+    async def test_reset_password_without_email(self, mock_context, mock_okta_client):
+        """Test password reset without sending email."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import reset_password
+
+            result = await reset_password(user_id="00u1abc123def456", send_email=False, ctx=mock_context)
+
+            assert result.get("success") is True
+
+
+class TestListUserGroups:
+    """Tests for list_user_groups tool."""
+
+    @pytest.mark.asyncio
+    async def test_list_user_groups_success(self, mock_context, mock_okta_client):
+        """Test successful listing of user groups."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import list_user_groups
+
+            result = await list_user_groups(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert "items" in result or "error" not in result
+            assert result.get("fetch_all_used") is False
+
+    @pytest.mark.asyncio
+    async def test_list_user_groups_with_limit(self, mock_context, mock_okta_client):
+        """Test listing user groups with limit parameter."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import list_user_groups
+
+            result = await list_user_groups(user_id="00u1abc123def456", limit=50, ctx=mock_context)
+
+            assert "error" not in result or result.get("success") is True
+
+
+class TestListUserApps:
+    """Tests for list_user_apps tool."""
+
+    @pytest.mark.asyncio
+    async def test_list_user_apps_success(self, mock_context, mock_okta_client):
+        """Test successful listing of user apps."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import list_user_apps
+
+            result = await list_user_apps(user_id="00u1abc123def456", ctx=mock_context)
+
+            assert "items" in result or "error" not in result
+            assert result.get("fetch_all_used") is False
+
+    @pytest.mark.asyncio
+    async def test_list_user_apps_with_limit(self, mock_context, mock_okta_client):
+        """Test listing user apps with limit parameter."""
+        with patch(
+            "okta_mcp_server.tools.users.users.get_okta_client",
+            new_callable=AsyncMock,
+            return_value=mock_okta_client,
+        ):
+            from okta_mcp_server.tools.users.users import list_user_apps
+
+            result = await list_user_apps(user_id="00u1abc123def456", limit=50, ctx=mock_context)
+
+            assert "error" not in result or result.get("success") is True

@@ -3,7 +3,7 @@ name = "okta-mcp-server"
 version = "0.1.0"
 description = "Okta MCP Server"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
     "loguru>=0.7.3",
     "mcp[cli]>=1.9.2",

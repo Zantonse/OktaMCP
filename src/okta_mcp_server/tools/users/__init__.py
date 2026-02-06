@@ -8,21 +8,41 @@
 """User management tools for Okta MCP Server."""
 
 from okta_mcp_server.tools.users.users import (
+    activate_user,
     create_user,
     deactivate_user,
     delete_deactivated_user,
+    expire_password,
+    expire_password_with_temp_password,
     get_user,
     get_user_profile_attributes,
+    list_user_apps,
+    list_user_groups,
     list_users,
+    reactivate_user,
+    reset_password,
+    suspend_user,
+    unlock_user,
+    unsuspend_user,
     update_user,
 )
 
 __all__ = [
+    "activate_user",
     "create_user",
     "deactivate_user",
     "delete_deactivated_user",
+    "expire_password",
+    "expire_password_with_temp_password",
     "get_user",
     "get_user_profile_attributes",
+    "list_user_apps",
+    "list_user_groups",
     "list_users",
+    "reactivate_user",
+    "reset_password",
+    "suspend_user",
+    "unlock_user",
+    "unsuspend_user",
     "update_user",
 ]
