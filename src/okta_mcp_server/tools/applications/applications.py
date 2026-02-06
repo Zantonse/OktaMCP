@@ -505,3 +505,172 @@ async def remove_user_from_application(app_id: str, user_id: str, ctx: Context) 
     except Exception as e:
         logger.error(f"Exception while removing user {user_id} from application {app_id}: {type(e).__name__}: {e}")
         return error_response(str(e))
+
+
+@mcp.tool()
+async def list_application_groups(
+    app_id: str,
+    ctx: Context,
+    fetch_all: bool = False,
+    after: Optional[str] = None,
+    limit: Optional[int] = None,
+) -> dict:
+    """List all groups assigned to an application with pagination support.
+
+    Parameters:
+        app_id (str, required): The ID of the application.
+        fetch_all (bool, optional): If True, auto-fetch all pages. Default: False.
+        after (str, optional): Pagination cursor.
+        limit (int, optional): Maximum per page (min 20, max 100).
+
+    Returns:
+        Dict containing:
+        - items: List of groups assigned to the application
+        - total_fetched: Number of groups returned
+        - has_more: Boolean indicating if more results are available
+        - next_cursor: Cursor for the next page (if has_more is True)
+        - fetch_all_used: Boolean indicating if fetch_all was used
+        - pagination_info: Additional pagination metadata (when fetch_all=True)
+    """
+    logger.info(f"Listing groups for application: {app_id}")
+    logger.debug(f"Query parameters: limit={limit}, fetch_all={fetch_all}, after={after}")
+
+    # Validate limit parameter range
+    if limit is not None:
+        if limit < 20:
+            logger.warning(f"Limit {limit} is below minimum (20), setting to 20")
+            limit = 20
+        elif limit > 100:
+            logger.warning(f"Limit {limit} exceeds maximum (100), setting to 100")
+            limit = 100
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+        query_params = build_query_params(after=after, limit=limit)
+
+        logger.debug("Calling Okta API to list application groups")
+        groups, response, err = await client.list_application_group_assignments(app_id, query_params)
+
+        if err:
+            logger.error(f"Okta API error while listing application groups for {app_id}: {err}")
+            return error_response(str(err))
+
+        if not groups:
+            logger.info(f"No groups found assigned to application {app_id}")
+            return create_paginated_response([], response, fetch_all_used=fetch_all)
+
+        if fetch_all and response and hasattr(response, "has_next") and response.has_next():
+            logger.info(f"fetch_all=True, auto-paginating from initial {len(groups)} groups")
+            all_groups, pagination_info = await paginate_all_results(response, groups)
+
+            logger.info(
+                f"Successfully retrieved {len(all_groups)} groups across {pagination_info['pages_fetched']} pages"
+            )
+            return create_paginated_response(
+                all_groups, response, fetch_all_used=True, pagination_info=pagination_info
+            )
+        else:
+            logger.info(f"Successfully retrieved {len(groups)} groups for application {app_id}")
+            return create_paginated_response(groups, response, fetch_all_used=fetch_all)
+
+    except Exception as e:
+        logger.error(f"Exception while listing application groups for {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def get_application_group(app_id: str, group_id: str, ctx: Context) -> dict:
+    """Get a specific group assigned to an application.
+
+    Parameters:
+        app_id (str, required): The ID of the application.
+        group_id (str, required): The ID of the group to retrieve.
+
+    Returns:
+        Dict with success status and group assignment details.
+    """
+    logger.info(f"Getting group {group_id} for application {app_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        logger.debug(f"Calling Okta API to get application group {group_id} for app {app_id}")
+        group, _, err = await client.get_application_group_assignment(app_id, group_id)
+
+        if err:
+            logger.error(f"Okta API error while getting group {group_id} for application {app_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully retrieved group {group_id} for application {app_id}")
+        return success_response(group)
+    except Exception as e:
+        logger.error(f"Exception while getting group {group_id} for application {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def assign_group_to_application(app_id: str, group_id: str, ctx: Context) -> dict:
+    """Assign a group to an application.
+
+    Parameters:
+        app_id (str, required): The application ID.
+        group_id (str, required): The group ID to assign.
+
+    Returns:
+        Dict with success status and assignment details.
+    """
+    logger.info(f"Assigning group {group_id} to application {app_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        logger.debug(f"Calling Okta API to assign group {group_id} to application {app_id}")
+        group, _, err = await client.create_application_group_assignment(app_id, group_id, {})
+
+        if err:
+            logger.error(f"Okta API error while assigning group {group_id} to application {app_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully assigned group {group_id} to application {app_id}")
+        return success_response(group)
+    except Exception as e:
+        logger.error(f"Exception while assigning group {group_id} to application {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def remove_group_from_application(app_id: str, group_id: str, ctx: Context) -> dict:
+    """Remove a group from an application.
+
+    Parameters:
+        app_id (str, required): The application ID.
+        group_id (str, required): The group ID to remove.
+
+    Returns:
+        Dict with success status and result of the removal operation.
+    """
+    logger.info(f"Removing group {group_id} from application {app_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        logger.debug(f"Calling Okta API to remove group {group_id} from application {app_id}")
+        _, err = await client.delete_application_group_assignment(app_id, group_id)
+
+        if err:
+            logger.error(f"Okta API error while removing group {group_id} from application {app_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully removed group {group_id} from application {app_id}")
+        return success_response({"message": f"Group {group_id} removed from application {app_id} successfully"})
+    except Exception as e:
+        logger.error(f"Exception while removing group {group_id} from application {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
