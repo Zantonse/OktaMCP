@@ -228,6 +228,25 @@ class MockBrandTheme:
 
 
 @dataclass
+class MockAuthenticator:
+    """Mock Okta authenticator object."""
+
+    id: str = "aut1abc123"
+    key: str = "okta_verify"
+    name: str = "Okta Verify"
+    type: str = "app"
+    status: str = "ACTIVE"
+
+
+@dataclass
+class MockAuthenticatorMethod:
+    """Mock Okta authenticator method object."""
+
+    type: str = "push"
+    status: str = "ACTIVE"
+
+
+@dataclass
 class MockEmailTemplate:
     """Mock Okta email template object."""
 
@@ -609,6 +628,30 @@ class MockOktaClient:
 
     async def update_sign_in_page(self, brand_id, body):
         return MockSignInPage(), MockOktaResponse(), None
+
+    async def list_authenticators(self):
+        return [MockAuthenticator()], MockOktaResponse(), None
+
+    async def get_authenticator(self, authenticator_id):
+        return MockAuthenticator(id=authenticator_id), MockOktaResponse(), None
+
+    async def activate_authenticator(self, authenticator_id):
+        return MockAuthenticator(id=authenticator_id, status="ACTIVE"), None
+
+    async def deactivate_authenticator(self, authenticator_id):
+        return MockAuthenticator(id=authenticator_id, status="INACTIVE"), None
+
+    async def list_authenticator_methods(self, authenticator_id):
+        return [MockAuthenticatorMethod()], MockOktaResponse(), None
+
+    async def get_authenticator_method(self, authenticator_id, method_type):
+        return MockAuthenticatorMethod(type=method_type), MockOktaResponse(), None
+
+    async def activate_authenticator_method(self, authenticator_id, method_type):
+        return MockAuthenticatorMethod(type=method_type, status="ACTIVE"), None
+
+    async def deactivate_authenticator_method(self, authenticator_id, method_type):
+        return MockAuthenticatorMethod(type=method_type, status="INACTIVE"), None
 
 
 class MockOktaAuthManager:
