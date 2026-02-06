@@ -736,9 +736,7 @@ async def list_user_apps(
             all_apps, pagination_info = await paginate_all_results(response, apps)
             pages_count = pagination_info["pages_fetched"]
             logger.info(f"Retrieved {len(all_apps)} apps across {pages_count} pages")
-            return create_paginated_response(
-                all_apps, response, fetch_all_used=True, pagination_info=pagination_info
-            )
+            return create_paginated_response(all_apps, response, fetch_all_used=True, pagination_info=pagination_info)
         else:
             logger.info(f"Successfully retrieved {len(apps)} apps")
             return create_paginated_response(apps, response, fetch_all_used=fetch_all)

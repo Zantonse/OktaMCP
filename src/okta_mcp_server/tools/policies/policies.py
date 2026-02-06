@@ -75,9 +75,11 @@ async def list_policies(
             return success_response({"policies": []})
 
         logger.info(f"Successfully retrieved {len(policies)} policies")
-        return success_response({
-            "policies": [policy.as_dict() for policy in policies],
-        })
+        return success_response(
+            {
+                "policies": [policy.as_dict() for policy in policies],
+            }
+        )
 
     except Exception as e:
         logger.error(f"Exception listing policies: {e}")
@@ -279,11 +281,13 @@ async def list_policy_rules(ctx: Context, policy_id: str) -> dict:
             logger.info("No policy rules found")
             return success_response({"rules": []})
 
-        return success_response({
-            "rules": [rule.as_dict() for rule in rules],
-            "has_next": resp.has_next() if resp else False,
-            "next_cursor": extract_after_cursor(resp),
-        })
+        return success_response(
+            {
+                "rules": [rule.as_dict() for rule in rules],
+                "has_next": resp.has_next() if resp else False,
+                "next_cursor": extract_after_cursor(resp),
+            }
+        )
 
     except Exception as e:
         logger.error(f"Exception listing policy rules: {e}")
@@ -352,9 +356,7 @@ async def create_policy_rule(ctx: Context, policy_id: str, rule_data: Dict[str, 
 
 
 @mcp.tool()
-async def update_policy_rule(
-    ctx: Context, policy_id: str, rule_id: str, rule_data: Dict[str, Any]
-) -> dict:
+async def update_policy_rule(ctx: Context, policy_id: str, rule_id: str, rule_data: Dict[str, Any]) -> dict:
     """Update an existing policy rule.
 
     Parameters:

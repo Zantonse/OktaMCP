@@ -74,9 +74,7 @@ async def get_logs(
         client = await get_okta_client(manager)
         logger.debug("Calling Okta API to retrieve system logs")
 
-        query_params = build_query_params(
-            after=after, limit=limit, since=since, until=until, filter=filter_expr, q=q
-        )
+        query_params = build_query_params(after=after, limit=limit, since=since, until=until, filter=filter_expr, q=q)
 
         logs, response, err = await client.get_logs(query_params)
 

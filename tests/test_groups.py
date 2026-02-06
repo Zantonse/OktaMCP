@@ -171,9 +171,7 @@ class TestListGroupUsers:
         ):
             from okta_mcp_server.tools.groups.groups import list_group_users
 
-            result = await list_group_users(
-                group_id="00g1abc123def456", ctx=mock_context
-            )
+            result = await list_group_users(group_id="00g1abc123def456", ctx=mock_context)
 
             assert "items" in result or "error" not in result
 

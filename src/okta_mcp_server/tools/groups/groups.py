@@ -191,11 +191,13 @@ async def delete_group(group_id: str, ctx: Context = None) -> dict:
     """
     logger.warning(f"Deletion requested for group {group_id}, awaiting confirmation")
 
-    return success_response({
-        "confirmation_required": True,
-        "message": f"To confirm deletion of group {group_id}, please type 'DELETE'",
-        "group_id": group_id,
-    })
+    return success_response(
+        {
+            "confirmation_required": True,
+            "message": f"To confirm deletion of group {group_id}, please type 'DELETE'",
+            "group_id": group_id,
+        }
+    )
 
 
 @mcp.tool()

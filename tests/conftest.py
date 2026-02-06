@@ -72,6 +72,46 @@ class MockGroup:
             self.profile = MockGroupProfile()
 
 
+@dataclass
+class MockAuthorizationServer:
+    """Mock Okta authorization server object."""
+
+    id: str = "aus1abc123"
+    name: str = "Test Auth Server"
+    description: str = "Test Description"
+    status: str = "ACTIVE"
+    audiences: list = None
+
+    def __post_init__(self):
+        if self.audiences is None:
+            self.audiences = ["api://default"]
+
+
+@dataclass
+class MockPolicy:
+    """Mock Okta policy object."""
+
+    id: str = "00p1abc123"
+    name: str = "Default Policy"
+    status: str = "ACTIVE"
+
+
+@dataclass
+class MockScope:
+    """Mock OAuth2 scope object."""
+
+    id: str = "scp1abc123"
+    name: str = "test_scope"
+
+
+@dataclass
+class MockClaim:
+    """Mock OAuth2 claim object."""
+
+    id: str = "clm1abc123"
+    name: str = "test_claim"
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -232,6 +272,45 @@ class MockOktaClient:
 
     async def delete_application_group_assignment(self, app_id, group_id):
         return None, None
+
+    async def list_authorization_servers(self, query_params=None):
+        return [MockAuthorizationServer()], MockOktaResponse(), None
+
+    async def get_authorization_server(self, auth_server_id):
+        return MockAuthorizationServer(id=auth_server_id), MockOktaResponse(), None
+
+    async def create_authorization_server(self, body):
+        return MockAuthorizationServer(), MockOktaResponse(), None
+
+    async def update_authorization_server(self, auth_server_id, body):
+        return MockAuthorizationServer(id=auth_server_id), MockOktaResponse(), None
+
+    async def delete_authorization_server(self, auth_server_id):
+        return None, None
+
+    async def activate_authorization_server(self, auth_server_id):
+        return None, None
+
+    async def deactivate_authorization_server(self, auth_server_id):
+        return None, None
+
+    async def list_authorization_server_policies(self, auth_server_id, query_params=None):
+        return [MockPolicy()], MockOktaResponse(), None
+
+    async def create_authorization_server_policy(self, auth_server_id, body):
+        return MockPolicy(), MockOktaResponse(), None
+
+    async def list_o_auth2_scopes(self, auth_server_id, query_params=None):
+        return [MockScope()], MockOktaResponse(), None
+
+    async def create_o_auth2_scope(self, auth_server_id, body):
+        return MockScope(), MockOktaResponse(), None
+
+    async def list_o_auth2_claims(self, auth_server_id, query_params=None):
+        return [MockClaim()], MockOktaResponse(), None
+
+    async def create_o_auth2_claim(self, auth_server_id, body):
+        return MockClaim(), MockOktaResponse(), None
 
 
 class MockOktaAuthManager:

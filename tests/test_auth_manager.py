@@ -141,9 +141,7 @@ class TestTokenRefresh:
             patch("keyring.set_password"),
             patch("httpx.AsyncClient") as mock_client,
         ):
-            mock_client.return_value.__aenter__.return_value.post = AsyncMock(
-                return_value=mock_response
-            )
+            mock_client.return_value.__aenter__.return_value.post = AsyncMock(return_value=mock_response)
 
             manager = OktaAuthManager()
             result = await manager.refresh_access_token()
