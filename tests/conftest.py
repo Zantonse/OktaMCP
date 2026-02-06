@@ -173,6 +173,36 @@ class MockRole:
 
 
 @dataclass
+class MockUserSchema:
+    """Mock Okta user schema object."""
+
+    id: str = "https://test.okta.com/meta/schemas/user/default"
+    name: str = "user"
+    definitions: dict = None
+
+    def __post_init__(self):
+        if self.definitions is None:
+            self.definitions = {"base": {}, "custom": {}}
+
+
+@dataclass
+class MockUserType:
+    """Mock Okta user type object."""
+
+    id: str = "oty1abc123"
+    name: str = "Default"
+    display_name: str = "Default User Type"
+
+
+@dataclass
+class MockAppUserSchema:
+    """Mock Okta app user schema object."""
+
+    id: str = "https://test.okta.com/meta/schemas/apps/0oa123/default"
+    name: str = "app_user"
+
+
+@dataclass
 class MockRoleTarget:
     """Mock Okta role target object."""
 
@@ -496,6 +526,21 @@ class MockOktaClient:
 
     async def remove_application_target_from_administrator_role_for_user(self, user_id, role_id, app_id):
         return None, None
+
+    async def get_user_schema(self, type_id):
+        return MockUserSchema(), MockOktaResponse(), None
+
+    async def list_user_types(self):
+        return [MockUserType()], MockOktaResponse(), None
+
+    async def update_user_profile(self, type_id, body):
+        return MockUserSchema(), MockOktaResponse(), None
+
+    async def get_application_user_schema(self, app_id):
+        return MockAppUserSchema(), MockOktaResponse(), None
+
+    async def update_application_user_profile(self, app_id, body):
+        return MockAppUserSchema(), MockOktaResponse(), None
 
 
 class MockOktaAuthManager:

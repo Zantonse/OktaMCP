@@ -72,6 +72,7 @@ def main():
     from okta_mcp_server.tools.network_zones import network_zones  # noqa: F401
     from okta_mcp_server.tools.policies import policies  # noqa: F401
     from okta_mcp_server.tools.roles import roles  # noqa: F401
+    from okta_mcp_server.tools.schemas import schemas  # noqa: F401
     from okta_mcp_server.tools.system_logs import system_logs  # noqa: F401
     from okta_mcp_server.tools.trusted_origins import trusted_origins  # noqa: F401
     from okta_mcp_server.tools.users import users  # noqa: F401
