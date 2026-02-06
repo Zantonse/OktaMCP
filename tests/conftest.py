@@ -162,6 +162,24 @@ class MockTrustedOrigin:
             self.scopes = [{"type": "CORS"}, {"type": "REDIRECT"}]
 
 
+@dataclass
+class MockRole:
+    """Mock Okta role object."""
+
+    id: str = "rol1abc123"
+    type: str = "USER_ADMIN"
+    status: str = "ACTIVE"
+    label: str = "User Administrator"
+
+
+@dataclass
+class MockRoleTarget:
+    """Mock Okta role target object."""
+
+    id: str = "00g1abc123"
+    type: str = "GROUP"
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -441,6 +459,42 @@ class MockOktaClient:
         return None, None
 
     async def deactivate_trusted_origin(self, origin_id):
+        return None, None
+
+    async def list_assigned_roles_for_user(self, user_id):
+        return [MockRole()], MockOktaResponse(), None
+
+    async def list_assigned_roles_for_group(self, group_id):
+        return [MockRole()], MockOktaResponse(), None
+
+    async def assign_role_to_user(self, user_id, body):
+        return MockRole(), MockOktaResponse(), None
+
+    async def unassign_role_from_user(self, user_id, role_id):
+        return None, None
+
+    async def assign_role_to_group(self, group_id, body):
+        return MockRole(), MockOktaResponse(), None
+
+    async def unassign_role_from_group(self, group_id, role_id):
+        return None, None
+
+    async def list_group_targets_for_role(self, user_id, role_id):
+        return [MockRoleTarget()], MockOktaResponse(), None
+
+    async def list_application_targets_for_administrator_role_for_user(self, user_id, role_id):
+        return [MockRoleTarget(type="APP")], MockOktaResponse(), None
+
+    async def add_group_target_to_role(self, user_id, role_id, group_id):
+        return None, None
+
+    async def add_application_target_to_admin_role_for_user(self, user_id, role_id, app_id):
+        return None, None
+
+    async def remove_group_target_from_role(self, user_id, role_id, group_id):
+        return None, None
+
+    async def remove_application_target_from_administrator_role_for_user(self, user_id, role_id, app_id):
         return None, None
 
 
