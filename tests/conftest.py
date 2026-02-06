@@ -112,6 +112,16 @@ class MockClaim:
     name: str = "test_claim"
 
 
+@dataclass
+class MockIdentityProvider:
+    """Mock Okta identity provider object."""
+
+    id: str = "0oa1abc123"
+    name: str = "Test IdP"
+    type: str = "SAML2"
+    status: str = "ACTIVE"
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -311,6 +321,27 @@ class MockOktaClient:
 
     async def create_o_auth2_claim(self, auth_server_id, body):
         return MockClaim(), MockOktaResponse(), None
+
+    async def list_identity_providers(self, query_params=None):
+        return [MockIdentityProvider()], MockOktaResponse(), None
+
+    async def get_identity_provider(self, idp_id):
+        return MockIdentityProvider(id=idp_id), MockOktaResponse(), None
+
+    async def create_identity_provider(self, body):
+        return MockIdentityProvider(), MockOktaResponse(), None
+
+    async def update_identity_provider(self, idp_id, body):
+        return MockIdentityProvider(id=idp_id), MockOktaResponse(), None
+
+    async def delete_identity_provider(self, idp_id):
+        return None, None
+
+    async def activate_identity_provider(self, idp_id):
+        return None, None
+
+    async def deactivate_identity_provider(self, idp_id):
+        return None, None
 
 
 class MockOktaAuthManager:

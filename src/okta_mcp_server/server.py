@@ -67,6 +67,7 @@ def main():
     from okta_mcp_server.tools.applications import applications  # noqa: F401
     from okta_mcp_server.tools.auth_servers import auth_servers  # noqa: F401
     from okta_mcp_server.tools.groups import groups  # noqa: F401
+    from okta_mcp_server.tools.identity_providers import identity_providers  # noqa: F401
     from okta_mcp_server.tools.policies import policies  # noqa: F401
     from okta_mcp_server.tools.system_logs import system_logs  # noqa: F401
     from okta_mcp_server.tools.users import users  # noqa: F401
