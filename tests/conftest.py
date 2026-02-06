@@ -210,6 +210,38 @@ class MockRoleTarget:
     type: str = "GROUP"
 
 
+@dataclass
+class MockBrand:
+    """Mock Okta brand object."""
+
+    id: str = "bnd1abc123"
+    name: str = "Test Brand"
+
+
+@dataclass
+class MockBrandTheme:
+    """Mock Okta brand theme object."""
+
+    id: str = "thm1abc123"
+    primary_color_hex: str = "#1662dd"
+    secondary_color_hex: str = "#ffffff"
+
+
+@dataclass
+class MockEmailTemplate:
+    """Mock Okta email template object."""
+
+    name: str = "UserActivation"
+    subject: str = "Welcome to {{org.name}}"
+
+
+@dataclass
+class MockSignInPage:
+    """Mock Okta sign-in page object."""
+
+    widget_version: str = "^5"
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -541,6 +573,42 @@ class MockOktaClient:
 
     async def update_application_user_profile(self, app_id, body):
         return MockAppUserSchema(), MockOktaResponse(), None
+
+    async def list_brands(self):
+        return [MockBrand()], MockOktaResponse(), None
+
+    async def get_brand(self, brand_id):
+        return MockBrand(id=brand_id), MockOktaResponse(), None
+
+    async def update_brand(self, brand_id, body):
+        return MockBrand(id=brand_id), MockOktaResponse(), None
+
+    async def list_brand_themes(self, brand_id):
+        return [MockBrandTheme()], MockOktaResponse(), None
+
+    async def get_brand_theme(self, brand_id, theme_id):
+        return MockBrandTheme(id=theme_id), MockOktaResponse(), None
+
+    async def update_brand_theme(self, brand_id, theme_id, body):
+        return MockBrandTheme(id=theme_id), MockOktaResponse(), None
+
+    async def upload_brand_theme_logo(self, brand_id, theme_id, file):
+        return {"url": "https://example.com/logo.png"}, MockOktaResponse(), None
+
+    async def upload_brand_theme_favicon(self, brand_id, theme_id, file):
+        return {"url": "https://example.com/favicon.ico"}, MockOktaResponse(), None
+
+    async def get_email_template(self, brand_id, template_name):
+        return MockEmailTemplate(name=template_name), MockOktaResponse(), None
+
+    async def update_email_template(self, brand_id, template_name, body):
+        return MockEmailTemplate(name=template_name), MockOktaResponse(), None
+
+    async def get_sign_in_page(self, brand_id):
+        return MockSignInPage(), MockOktaResponse(), None
+
+    async def update_sign_in_page(self, brand_id, body):
+        return MockSignInPage(), MockOktaResponse(), None
 
 
 class MockOktaAuthManager:
