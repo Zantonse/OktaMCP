@@ -147,6 +147,21 @@ class MockNetworkZone:
             self.gateways = [{"type": "CIDR", "value": "10.0.0.0/8"}]
 
 
+@dataclass
+class MockTrustedOrigin:
+    """Mock Okta trusted origin object."""
+
+    id: str = "tos1abc123"
+    name: str = "Test Origin"
+    origin: str = "https://example.com"
+    status: str = "ACTIVE"
+    scopes: list = None
+
+    def __post_init__(self):
+        if self.scopes is None:
+            self.scopes = [{"type": "CORS"}, {"type": "REDIRECT"}]
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -405,6 +420,27 @@ class MockOktaClient:
         return None, None
 
     async def deactivate_network_zone(self, zone_id):
+        return None, None
+
+    async def list_trusted_origins(self, query_params=None):
+        return [MockTrustedOrigin()], MockOktaResponse(), None
+
+    async def get_trusted_origin(self, origin_id):
+        return MockTrustedOrigin(id=origin_id), MockOktaResponse(), None
+
+    async def create_trusted_origin(self, body):
+        return MockTrustedOrigin(), MockOktaResponse(), None
+
+    async def update_trusted_origin(self, origin_id, body):
+        return MockTrustedOrigin(id=origin_id), MockOktaResponse(), None
+
+    async def delete_trusted_origin(self, origin_id):
+        return None, None
+
+    async def activate_trusted_origin(self, origin_id):
+        return None, None
+
+    async def deactivate_trusted_origin(self, origin_id):
         return None, None
 
 
