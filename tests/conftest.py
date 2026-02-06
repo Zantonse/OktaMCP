@@ -122,6 +122,16 @@ class MockIdentityProvider:
     status: str = "ACTIVE"
 
 
+@dataclass
+class MockFactor:
+    """Mock Okta factor object."""
+
+    id: str = "fct1abc123"
+    factor_type: str = "sms"
+    provider: str = "OKTA"
+    status: str = "ACTIVE"
+
+
 class MockOktaResponse:
     """Mock Okta API response object."""
 
@@ -342,6 +352,24 @@ class MockOktaClient:
 
     async def deactivate_identity_provider(self, idp_id):
         return None, None
+
+    async def list_factors(self, user_id):
+        return [MockFactor()], MockOktaResponse(), None
+
+    async def get_factor(self, user_id, factor_id):
+        return MockFactor(id=factor_id), MockOktaResponse(), None
+
+    async def enroll_factor(self, user_id, body):
+        return MockFactor(), MockOktaResponse(), None
+
+    async def activate_factor(self, user_id, factor_id, body):
+        return MockFactor(id=factor_id), MockOktaResponse(), None
+
+    async def delete_factor(self, user_id, factor_id):
+        return None, None
+
+    async def verify_factor(self, user_id, factor_id, body):
+        return {"factorResult": "SUCCESS"}, MockOktaResponse(), None
 
 
 class MockOktaAuthManager:
