@@ -89,9 +89,7 @@ async def list_applications(
             logger.info(
                 f"Successfully retrieved {len(all_apps)} applications across {pagination_info['pages_fetched']} pages"
             )
-            return create_paginated_response(
-                all_apps, response, fetch_all_used=True, pagination_info=pagination_info
-            )
+            return create_paginated_response(all_apps, response, fetch_all_used=True, pagination_info=pagination_info)
         else:
             logger.info(f"Successfully retrieved {len(apps)} applications")
             return create_paginated_response(apps, response, fetch_all_used=fetch_all)
@@ -221,11 +219,13 @@ async def delete_application(ctx: Context, app_id: str) -> dict:
     """
     logger.warning(f"Deletion requested for application {app_id}, awaiting confirmation")
 
-    return success_response({
-        "confirmation_required": True,
-        "message": f"To confirm deletion of application {app_id}, please type 'DELETE'",
-        "app_id": app_id,
-    })
+    return success_response(
+        {
+            "confirmation_required": True,
+            "message": f"To confirm deletion of application {app_id}, please type 'DELETE'",
+            "app_id": app_id,
+        }
+    )
 
 
 @mcp.tool()
@@ -326,4 +326,182 @@ async def deactivate_application(ctx: Context, app_id: str) -> dict:
         return success_response({"message": f"Application {app_id} deactivated successfully"})
     except Exception as e:
         logger.error(f"Exception while deactivating application {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def list_application_users(
+    app_id: str,
+    ctx: Context,
+    fetch_all: bool = False,
+    after: Optional[str] = None,
+    limit: Optional[int] = None,
+) -> dict:
+    """List all users assigned to an application with pagination support.
+
+    Parameters:
+        app_id (str, required): The ID of the application.
+        fetch_all (bool, optional): If True, auto-fetch all pages. Default: False.
+        after (str, optional): Pagination cursor.
+        limit (int, optional): Maximum per page (min 20, max 100).
+
+    Returns:
+        Dict containing:
+        - items: List of users assigned to the application
+        - total_fetched: Number of users returned
+        - has_more: Boolean indicating if more results are available
+        - next_cursor: Cursor for the next page (if has_more is True)
+        - fetch_all_used: Boolean indicating if fetch_all was used
+        - pagination_info: Additional pagination metadata (when fetch_all=True)
+    """
+    logger.info(f"Listing users for application: {app_id}")
+    logger.debug(f"Query parameters: limit={limit}, fetch_all={fetch_all}, after={after}")
+
+    # Validate limit parameter range
+    if limit is not None:
+        if limit < 20:
+            logger.warning(f"Limit {limit} is below minimum (20), setting to 20")
+            limit = 20
+        elif limit > 100:
+            logger.warning(f"Limit {limit} exceeds maximum (100), setting to 100")
+            limit = 100
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+        query_params = build_query_params(after=after, limit=limit)
+
+        logger.debug("Calling Okta API to list application users")
+        users, response, err = await client.list_application_users(app_id, query_params)
+
+        if err:
+            logger.error(f"Okta API error while listing application users for {app_id}: {err}")
+            return error_response(str(err))
+
+        if not users:
+            logger.info(f"No users found assigned to application {app_id}")
+            return create_paginated_response([], response, fetch_all_used=fetch_all)
+
+        if fetch_all and response and hasattr(response, "has_next") and response.has_next():
+            logger.info(f"fetch_all=True, auto-paginating from initial {len(users)} users")
+            all_users, pagination_info = await paginate_all_results(response, users)
+
+            logger.info(
+                f"Successfully retrieved {len(all_users)} users across {pagination_info['pages_fetched']} pages"
+            )
+            return create_paginated_response(all_users, response, fetch_all_used=True, pagination_info=pagination_info)
+        else:
+            logger.info(f"Successfully retrieved {len(users)} users for application {app_id}")
+            return create_paginated_response(users, response, fetch_all_used=fetch_all)
+
+    except Exception as e:
+        logger.error(f"Exception while listing application users for {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def get_application_user(app_id: str, user_id: str, ctx: Context) -> dict:
+    """Get a specific user assigned to an application.
+
+    Parameters:
+        app_id (str, required): The ID of the application.
+        user_id (str, required): The ID of the user to retrieve.
+
+    Returns:
+        Dict with success status and user assignment details.
+    """
+    logger.info(f"Getting user {user_id} for application {app_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        logger.debug(f"Calling Okta API to get application user {user_id} for app {app_id}")
+        user, _, err = await client.get_application_user(app_id, user_id)
+
+        if err:
+            logger.error(f"Okta API error while getting user {user_id} for application {app_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully retrieved user {user_id} for application {app_id}")
+        return success_response(user)
+    except Exception as e:
+        logger.error(f"Exception while getting user {user_id} for application {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def assign_user_to_application(
+    app_id: str,
+    user_id: str,
+    ctx: Context,
+    app_user_config: Optional[Dict[str, Any]] = None,
+) -> dict:
+    """Assign a user to an application.
+
+    Parameters:
+        app_id (str, required): The application ID.
+        user_id (str, required): The user ID to assign.
+        app_user_config (dict, optional): Additional config like credentials or profile.
+
+    Returns:
+        Dict with success status and assignment details.
+    """
+    logger.info(f"Assigning user {user_id} to application {app_id}")
+    logger.debug(f"App user config: {app_user_config}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        body = {"id": user_id}
+        if app_user_config:
+            body.update(app_user_config)
+
+        logger.debug(f"Calling Okta API to assign user {user_id} to application {app_id}")
+        user, _, err = await client.assign_user_to_application(app_id, body)
+
+        if err:
+            logger.error(f"Okta API error while assigning user {user_id} to application {app_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully assigned user {user_id} to application {app_id}")
+        return success_response(user)
+    except Exception as e:
+        logger.error(f"Exception while assigning user {user_id} to application {app_id}: {type(e).__name__}: {e}")
+        return error_response(str(e))
+
+
+@mcp.tool()
+async def remove_user_from_application(app_id: str, user_id: str, ctx: Context) -> dict:
+    """Remove a user from an application.
+
+    Parameters:
+        app_id (str, required): The application ID.
+        user_id (str, required): The user ID to remove.
+
+    Returns:
+        Dict with success status and result of the removal operation.
+    """
+    logger.info(f"Removing user {user_id} from application {app_id}")
+
+    manager = ctx.request_context.lifespan_context.okta_auth_manager
+
+    try:
+        client = await get_okta_client(manager)
+
+        logger.debug(f"Calling Okta API to remove user {user_id} from application {app_id}")
+        _, err = await client.delete_application_user(app_id, user_id)
+
+        if err:
+            logger.error(f"Okta API error while removing user {user_id} from application {app_id}: {err}")
+            return error_response(str(err))
+
+        logger.info(f"Successfully removed user {user_id} from application {app_id}")
+        return success_response({"message": f"User {user_id} removed from application {app_id} successfully"})
+    except Exception as e:
+        logger.error(f"Exception while removing user {user_id} from application {app_id}: {type(e).__name__}: {e}")
         return error_response(str(e))
