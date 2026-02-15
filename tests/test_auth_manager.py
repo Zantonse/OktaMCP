@@ -313,3 +313,43 @@ class TestJsonDecodeHandling:
             device_data = {"device_code": "test_code", "interval": 0.1, "expires_in": 0.5, "start_time": time_module.time()}
             result = await manager._poll_for_token(device_data)
         assert result is None
+
+
+class TestKeyringErrorHandling:
+    @pytest.mark.asyncio
+    async def test_browserless_auth_handles_keyring_error(self, monkeypatch):
+        monkeypatch.setenv("OKTA_ORG_URL", "https://test.okta.com")
+        monkeypatch.setenv("OKTA_CLIENT_ID", "test_client_id")
+        monkeypatch.setenv("OKTA_PRIVATE_KEY", "-----BEGIN RSA PRIVATE KEY-----\ntest\n-----END RSA PRIVATE KEY-----")
+        monkeypatch.setenv("OKTA_KEY_ID", "test_key_id")
+        from okta_mcp_server.utils.auth.auth_manager import OktaAuthManager
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"access_token": "test_token"}
+        with (
+            patch("httpx.AsyncClient") as mock_client,
+            patch("keyring.set_password", side_effect=Exception("No keyring backend")),
+        ):
+            mock_client.return_value.__aenter__.return_value.post = AsyncMock(return_value=mock_response)
+            manager = OktaAuthManager()
+            manager._get_client_assertion = MagicMock(return_value="fake_assertion")
+            result = await manager._browserless_authenticate()
+        assert result == "test_token"
+
+    @pytest.mark.asyncio
+    async def test_refresh_handles_keyring_error(self, monkeypatch):
+        monkeypatch.setenv("OKTA_ORG_URL", "https://test.okta.com")
+        monkeypatch.setenv("OKTA_CLIENT_ID", "test_client_id")
+        from okta_mcp_server.utils.auth.auth_manager import OktaAuthManager
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.json.return_value = {"access_token": "new_token", "refresh_token": "new_refresh"}
+        with (
+            patch("keyring.get_password", return_value="old_refresh_token"),
+            patch("keyring.set_password", side_effect=Exception("No keyring backend")),
+            patch("httpx.AsyncClient") as mock_client,
+        ):
+            mock_client.return_value.__aenter__.return_value.post = AsyncMock(return_value=mock_response)
+            manager = OktaAuthManager()
+            result = await manager.refresh_access_token()
+        assert result is True

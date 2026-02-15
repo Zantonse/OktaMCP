@@ -76,6 +76,13 @@ class OktaAuthManager:
         logger.info(f"OktaAuthManager initialized with org_url: {self.org_url}, client_id: {self.client_id}")
         logger.debug(f"Configured scopes: {self.scopes}")
 
+    def _store_token(self, key: str, value: str) -> None:
+        """Store a token in the keyring, logging errors on failure."""
+        try:
+            keyring.set_password(SERVICE_NAME, key, value)
+        except Exception as e:
+            logger.warning(f"Failed to store {key} in keyring: {e}")
+
     def _get_client_assertion(self) -> str:
         """Generate a JWT client assertion for browserless authentication."""
         logger.debug("Generating client assertion JWT")
@@ -148,7 +155,7 @@ class OktaAuthManager:
 
                     if access_token:
                         logger.info("Successfully obtained access token via browserless authentication")
-                        keyring.set_password(SERVICE_NAME, "api_token", access_token)
+                        self._store_token("api_token", access_token)
                         self.token_timestamp = int(time.time())
 
                         # Note: Client credentials flow doesn't provide refresh tokens
@@ -232,12 +239,12 @@ class OktaAuthManager:
 
                     if response.status_code == 200 and "access_token" in resp_json:
                         logger.info("Successfully obtained access token")
-                        keyring.set_password(SERVICE_NAME, "api_token", resp_json["access_token"])
+                        self._store_token("api_token", resp_json["access_token"])
                         self.token_timestamp = int(time.time())
 
                         if "refresh_token" in resp_json:
                             logger.debug("Refresh token received and stored")
-                            keyring.set_password(SERVICE_NAME, "refresh_token", resp_json["refresh_token"])
+                            self._store_token("refresh_token", resp_json["refresh_token"])
 
                         return resp_json["access_token"]
 
@@ -292,11 +299,11 @@ class OktaAuthManager:
                     except ValueError:
                         logger.error(f"Non-JSON response from token endpoint: {response.text[:200]}")
                         return False
-                    keyring.set_password(SERVICE_NAME, "api_token", resp_json["access_token"])
+                    self._store_token("api_token", resp_json["access_token"])
 
                     if "refresh_token" in resp_json:
                         logger.debug("New refresh token received and stored")
-                        keyring.set_password(SERVICE_NAME, "refresh_token", resp_json["refresh_token"])
+                        self._store_token("refresh_token", resp_json["refresh_token"])
 
                     self.token_timestamp = int(time.time())
                     logger.info("Token refreshed successfully")
