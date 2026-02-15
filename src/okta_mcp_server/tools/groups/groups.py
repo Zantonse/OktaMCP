@@ -104,7 +104,7 @@ async def list_groups(
 
 
 @mcp.tool()
-async def get_group(group_id: str, ctx: Context) -> dict:
+async def get_group(ctx: Context, group_id: str) -> dict:
     """Get a group by ID from the Okta organization
 
     This tool retrieves a group by its ID from the Okta organization.
@@ -137,7 +137,7 @@ async def get_group(group_id: str, ctx: Context) -> dict:
 
 
 @mcp.tool()
-async def create_group(profile: dict, ctx: Context) -> dict:
+async def create_group(ctx: Context, profile: dict) -> dict:
     """Create a group in the Okta organization.
 
     This tool creates a new group in the Okta organization with the provided profile.
@@ -174,7 +174,7 @@ async def create_group(profile: dict, ctx: Context) -> dict:
 
 
 @mcp.tool()
-async def delete_group(group_id: str, ctx: Context) -> dict:
+async def delete_group(ctx: Context, group_id: str) -> dict:
     """Delete a group by ID from the Okta organization.
 
     This tool deletes a group by its ID from the Okta organization, but requires confirmation. Wait for the
@@ -201,7 +201,7 @@ async def delete_group(group_id: str, ctx: Context) -> dict:
 
 
 @mcp.tool()
-async def confirm_delete_group(group_id: str, confirmation: str, ctx: Context) -> dict:
+async def confirm_delete_group(ctx: Context, group_id: str, confirmation: str) -> dict:
     """Confirm and execute group deletion after receiving confirmation.
 
     This function MUST ONLY be called after the human user has explicitly typed 'DELETE' as confirmation.
@@ -241,7 +241,7 @@ async def confirm_delete_group(group_id: str, confirmation: str, ctx: Context) -
 
 
 @mcp.tool()
-async def update_group(group_id: str, profile: dict, ctx: Context) -> dict:
+async def update_group(ctx: Context, group_id: str, profile: dict) -> dict:
     """Update a group by ID in the Okta organization.
 
     This tool updates a group by its ID with the provided profile.
@@ -357,7 +357,7 @@ async def list_group_users(
 
 
 @mcp.tool()
-async def list_group_apps(group_id: str, ctx: Context) -> dict:
+async def list_group_apps(ctx: Context, group_id: str) -> dict:
     """List all applications in a group by ID from the Okta organization.
 
     This tool retrieves all applications in a group by its ID from the Okta organization.
@@ -392,7 +392,7 @@ async def list_group_apps(group_id: str, ctx: Context) -> dict:
 
 
 @mcp.tool()
-async def add_user_to_group(group_id: str, user_id: str, ctx: Context) -> dict:
+async def add_user_to_group(ctx: Context, group_id: str, user_id: str) -> dict:
     """Add a user to a group by ID in the Okta organization.
 
     This tool adds a user to a group by its ID in the Okta organization.
@@ -426,7 +426,7 @@ async def add_user_to_group(group_id: str, user_id: str, ctx: Context) -> dict:
 
 
 @mcp.tool()
-async def remove_user_from_group(group_id: str, user_id: str, ctx: Context) -> dict:
+async def remove_user_from_group(ctx: Context, group_id: str, user_id: str) -> dict:
     """Remove a user from a group by ID in the Okta organization.
 
     This tool removes a user from a group by its ID in the Okta organization.
