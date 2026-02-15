@@ -27,7 +27,7 @@ class TestListAuthorizationServers:
 
             result = await list_authorization_servers(ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -42,7 +42,7 @@ class TestListAuthorizationServers:
 
             result = await list_authorization_servers(ctx=mock_context, q="test")
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
     @pytest.mark.asyncio
     async def test_list_authorization_servers_limit_validation(self, mock_context, mock_okta_client):
@@ -56,7 +56,7 @@ class TestListAuthorizationServers:
 
             # Test with limit below minimum
             result = await list_authorization_servers(ctx=mock_context, limit=5)
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestGetAuthorizationServer:
@@ -279,7 +279,7 @@ class TestListAuthServerPolicies:
 
             result = await list_auth_server_policies(auth_server_id="aus1abc123def456", ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -294,7 +294,7 @@ class TestListAuthServerPolicies:
 
             result = await list_auth_server_policies(auth_server_id="aus1abc123def456", ctx=mock_context, limit=5)
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestCreateAuthServerPolicy:
@@ -339,7 +339,7 @@ class TestListAuthServerScopes:
 
             result = await list_auth_server_scopes(auth_server_id="aus1abc123def456", ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -354,7 +354,7 @@ class TestListAuthServerScopes:
 
             result = await list_auth_server_scopes(auth_server_id="aus1abc123def456", ctx=mock_context, fetch_all=True)
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestCreateAuthServerScope:
@@ -409,7 +409,7 @@ class TestListAuthServerClaims:
 
             result = await list_auth_server_claims(auth_server_id="aus1abc123def456", ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -424,7 +424,7 @@ class TestListAuthServerClaims:
 
             result = await list_auth_server_claims(auth_server_id="aus1abc123def456", ctx=mock_context, limit=50)
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestCreateAuthServerClaim:

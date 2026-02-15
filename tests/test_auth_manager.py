@@ -109,8 +109,8 @@ class TestTokenValidation:
 
             await manager.is_valid_token()
 
-            # Should have attempted to refresh or re-authenticate
-            assert manager.refresh_access_token.called or manager.authenticate.called
+            # When refresh fails (returns False), authenticate should be called
+            assert manager.authenticate.called is True
 
 
 class TestTokenRefresh:

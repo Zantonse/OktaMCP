@@ -27,7 +27,7 @@ class TestListApplications:
 
             result = await list_applications(ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -42,7 +42,7 @@ class TestListApplications:
 
             result = await list_applications(ctx=mock_context, q="test")
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
     @pytest.mark.asyncio
     async def test_list_applications_limit_validation(self, mock_context, mock_okta_client):
@@ -56,7 +56,7 @@ class TestListApplications:
 
             # Test with limit below minimum
             result = await list_applications(ctx=mock_context, limit=5)
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestGetApplication:
@@ -260,7 +260,7 @@ class TestListApplicationUsers:
 
             result = await list_application_users(app_id="0oa1abc123def456", ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -275,7 +275,7 @@ class TestListApplicationUsers:
 
             result = await list_application_users(app_id="0oa1abc123def456", ctx=mock_context, limit=5)
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestGetApplicationUser:
@@ -394,7 +394,7 @@ class TestListApplicationGroups:
 
             result = await list_application_groups(app_id="0oa1abc123def456", ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -409,7 +409,7 @@ class TestListApplicationGroups:
 
             result = await list_application_groups(app_id="0oa1abc123def456", ctx=mock_context, limit=5)
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestGetApplicationGroup:

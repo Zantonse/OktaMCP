@@ -27,7 +27,7 @@ class TestListIdentityProviders:
 
             result = await list_identity_providers(ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -42,7 +42,7 @@ class TestListIdentityProviders:
 
             result = await list_identity_providers(ctx=mock_context, q="test")
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
     @pytest.mark.asyncio
     async def test_list_identity_providers_with_type_filter(self, mock_context, mock_okta_client):
@@ -56,7 +56,7 @@ class TestListIdentityProviders:
 
             result = await list_identity_providers(ctx=mock_context, type_filter="SAML2")
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
     @pytest.mark.asyncio
     async def test_list_identity_providers_limit_validation(self, mock_context, mock_okta_client):
@@ -70,7 +70,7 @@ class TestListIdentityProviders:
 
             # Test with limit below minimum
             result = await list_identity_providers(ctx=mock_context, limit=5)
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestGetIdentityProvider:

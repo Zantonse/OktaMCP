@@ -27,7 +27,7 @@ class TestListGroups:
 
             result = await list_groups(ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
             assert result.get("fetch_all_used") is False
 
     @pytest.mark.asyncio
@@ -45,7 +45,7 @@ class TestListGroups:
                 search='profile.name sw "Test"',
             )
 
-            assert "error" not in result or result.get("success") is True
+            assert "items" in result
 
 
 class TestGetGroup:
@@ -173,7 +173,7 @@ class TestListGroupUsers:
 
             result = await list_group_users(group_id="00g1abc123def456", ctx=mock_context)
 
-            assert "items" in result or "error" not in result
+            assert "items" in result
 
 
 class TestGroupMembership:
