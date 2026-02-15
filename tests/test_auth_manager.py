@@ -7,6 +7,7 @@
 
 """Tests for OktaAuthManager authentication flow."""
 
+import asyncio
 import time
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -184,3 +185,34 @@ class TestClearTokens:
 
         assert manager.token_timestamp == 0
         assert mock_delete.call_count >= 1
+
+
+class TestTokenRefreshRaceCondition:
+    """Tests for concurrent token refresh safety."""
+
+    @pytest.mark.asyncio
+    async def test_concurrent_is_valid_token_calls_authenticate_once(self, monkeypatch):
+        """When multiple calls hit is_valid_token with an expired token, authenticate should only run once."""
+        monkeypatch.setenv("OKTA_ORG_URL", "https://test.okta.com")
+        monkeypatch.setenv("OKTA_CLIENT_ID", "test_client_id")
+
+        from okta_mcp_server.utils.auth.auth_manager import OktaAuthManager
+
+        with patch("sys.exit"), patch("keyring.get_password", return_value="valid_token"), patch("keyring.set_password"):
+            manager = OktaAuthManager()
+            manager.token_timestamp = 0  # Expired
+
+            call_count = 0
+
+            async def counting_authenticate():
+                nonlocal call_count
+                call_count += 1
+                await asyncio.sleep(0.1)
+                manager.token_timestamp = time.time()
+
+            manager.authenticate = counting_authenticate
+            manager.refresh_access_token = AsyncMock(return_value=False)
+
+            results = await asyncio.gather(*[manager.is_valid_token() for _ in range(5)])
+
+            assert call_count == 1

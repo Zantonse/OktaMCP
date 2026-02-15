@@ -38,12 +38,14 @@ class OktaAuthManager:
     private_key: str = field(init=False, default=None)
     key_id: str = field(init=False, default=None)
     use_browserless_auth: bool = field(init=False, default=False)
+    _token_lock: asyncio.Lock = field(init=False, default_factory=asyncio.Lock)
 
     # TODO: Implement a way to set scopes dynamically by the user if needed.
 
     def __init__(self):
         """Initialize and validate Okta configuration from environment variables."""
         logger.debug("Initializing OktaAuthManager")
+        self._token_lock = asyncio.Lock()
         self.org_url = os.environ.get("OKTA_ORG_URL")
         self.client_id = os.environ.get("OKTA_CLIENT_ID")
         self.scopes = f"{self.scopes} {os.environ.get('OKTA_SCOPES', '').strip()}"
@@ -327,30 +329,31 @@ class OktaAuthManager:
 
     async def is_valid_token(self, expiry_duration: int = 3600) -> bool:
         """Ensure that a valid token is available. Refresh or re-authenticate if needed."""
-        logger.debug(f"Checking token validity (expiry duration: {expiry_duration}s)")
+        async with self._token_lock:
+            logger.debug(f"Checking token validity (expiry duration: {expiry_duration}s)")
 
-        api_token = keyring.get_password(SERVICE_NAME, "api_token")
-        token_age = time.time() - self.token_timestamp
+            api_token = keyring.get_password(SERVICE_NAME, "api_token")
+            token_age = time.time() - self.token_timestamp
 
-        if api_token and token_age < expiry_duration:
-            logger.debug(f"Token is valid (age: {token_age:.0f}s)")
-            return True
+            if api_token and token_age < expiry_duration:
+                logger.debug(f"Token is valid (age: {token_age:.0f}s)")
+                return True
 
-        logger.info(f"Token is expired or missing (age: {token_age:.0f}s)")
-        if self.use_browserless_auth:
-            # For browserless auth, we can't refresh, so re-authenticate
-            logger.info("Re-authenticating using browserless flow")
-            await self.authenticate()
-        else:
-            # For device flow, try to refresh first
-            refreshed = await self.refresh_access_token()
-
-            # If refresh token is not available or refresh failed, re-authenticate
-            if not refreshed:
-                logger.warning("Token refresh failed, initiating re-authentication")
+            logger.info(f"Token is expired or missing (age: {token_age:.0f}s)")
+            if self.use_browserless_auth:
+                # For browserless auth, we can't refresh, so re-authenticate
+                logger.info("Re-authenticating using browserless flow")
                 await self.authenticate()
+            else:
+                # For device flow, try to refresh first
+                refreshed = await self.refresh_access_token()
 
-        return keyring.get_password(SERVICE_NAME, "api_token") is not None
+                # If refresh token is not available or refresh failed, re-authenticate
+                if not refreshed:
+                    logger.warning("Token refresh failed, initiating re-authentication")
+                    await self.authenticate()
+
+            return keyring.get_password(SERVICE_NAME, "api_token") is not None
 
     def clear_tokens(self):
         """Clear all stored tokens from keyring."""

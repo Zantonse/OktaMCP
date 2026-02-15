@@ -33,6 +33,8 @@ async def get_okta_client(manager: OktaAuthManager) -> OktaClient:
         logger.warning("Token is invalid or expired, re-authenticating")
         await manager.authenticate()
         api_token = keyring.get_password(SERVICE_NAME, "api_token")
+    if not api_token:
+        raise RuntimeError("No API token available after authentication. Check keyring configuration.")
     config = {
         "orgUrl": manager.org_url,
         "token": api_token,
