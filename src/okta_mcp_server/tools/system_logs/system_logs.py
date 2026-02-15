@@ -18,7 +18,7 @@ from okta_mcp_server.utils.response import error_response
 
 @mcp.tool()
 async def get_logs(
-    ctx: Context = None,
+    ctx: Context,
     fetch_all: bool = False,
     after: Optional[str] = None,
     limit: Optional[int] = None,

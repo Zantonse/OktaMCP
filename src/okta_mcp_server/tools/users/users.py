@@ -115,7 +115,7 @@ async def list_users(
 
 
 @mcp.tool()
-async def get_user_profile_attributes(ctx: Context = None) -> dict:
+async def get_user_profile_attributes(ctx: Context) -> dict:
     """List all user profile attributes supported by your Okta org.
     This is helpful in case you need to check if the user profile attribute is valid.
     The prompt can contain non existent search terms, in which case we should seek clarification from the user
@@ -152,7 +152,7 @@ async def get_user_profile_attributes(ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def get_user(user_id: str, ctx: Context = None) -> dict:
+async def get_user(user_id: str, ctx: Context) -> dict:
     """Get a user by ID from the Okta organization
 
     This tool retrieves a user by their ID from the Okta organization.
@@ -181,7 +181,7 @@ async def get_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def create_user(profile: dict, ctx: Context = None) -> dict:
+async def create_user(profile: dict, ctx: Context) -> dict:
     """Create a user in the Okta organization.
 
     This tool creates a new user in the Okta organization with the provided profile.
@@ -219,7 +219,7 @@ async def create_user(profile: dict, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def update_user(user_id: str, profile: dict, ctx: Context = None) -> dict:
+async def update_user(user_id: str, profile: dict, ctx: Context) -> dict:
     """Update a user in the Okta organization.
 
     This tool updates an existing user in the Okta organization with the provided profile.
@@ -254,7 +254,7 @@ async def update_user(user_id: str, profile: dict, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def deactivate_user(user_id: str, ctx: Context = None) -> dict:
+async def deactivate_user(user_id: str, ctx: Context) -> dict:
     """Deactivates a user from the Okta organization.
 
     This tool deactivates a user from the Okta organization by their ID.
@@ -288,7 +288,7 @@ async def deactivate_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def delete_deactivated_user(user_id: str, ctx: Context = None) -> dict:
+async def delete_deactivated_user(user_id: str, ctx: Context) -> dict:
     """Delete a user from the Okta organization who has already been deactivated or deprovisioned.
 
     This tool deletes a user from the Okta organization by their ID who has already been deactivated or deprovisioned.
@@ -321,7 +321,7 @@ async def delete_deactivated_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def activate_user(user_id: str, ctx: Context = None) -> dict:
+async def activate_user(user_id: str, ctx: Context) -> dict:
     """Activates a user in the Okta organization.
 
     This tool activates a user in the Okta organization from STAGED or PROVISIONED status.
@@ -355,7 +355,7 @@ async def activate_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def reactivate_user(user_id: str, ctx: Context = None) -> dict:
+async def reactivate_user(user_id: str, ctx: Context) -> dict:
     """Reactivates a user in the Okta organization.
 
     This tool reactivates a user in the Okta organization from DEPROVISIONED status.
@@ -389,7 +389,7 @@ async def reactivate_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def suspend_user(user_id: str, ctx: Context = None) -> dict:
+async def suspend_user(user_id: str, ctx: Context) -> dict:
     """Suspends a user in the Okta organization.
 
     This tool suspends an active user in the Okta organization. Suspension temporarily
@@ -423,7 +423,7 @@ async def suspend_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def unsuspend_user(user_id: str, ctx: Context = None) -> dict:
+async def unsuspend_user(user_id: str, ctx: Context) -> dict:
     """Unsuspends a user in the Okta organization.
 
     This tool removes the suspension from a suspended user in the Okta organization.
@@ -457,7 +457,7 @@ async def unsuspend_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def unlock_user(user_id: str, ctx: Context = None) -> dict:
+async def unlock_user(user_id: str, ctx: Context) -> dict:
     """Unlocks a user in the Okta organization.
 
     This tool unlocks a user in the LOCKED_OUT status in the Okta organization,
@@ -491,7 +491,7 @@ async def unlock_user(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def expire_password(user_id: str, ctx: Context = None) -> dict:
+async def expire_password(user_id: str, ctx: Context) -> dict:
     """Expires the password for a user in the Okta organization.
 
     This tool expires a user's password, requiring them to reset it on their next login.
@@ -527,7 +527,7 @@ async def expire_password(user_id: str, ctx: Context = None) -> dict:
 
 
 @mcp.tool()
-async def expire_password_with_temp_password(user_id: str, ctx: Context = None) -> dict:
+async def expire_password_with_temp_password(user_id: str, ctx: Context) -> dict:
     """Expires the password for a user and generates a temporary password in the Okta organization.
 
     This tool expires a user's password and generates a temporary password that can be used for
@@ -569,7 +569,7 @@ async def expire_password_with_temp_password(user_id: str, ctx: Context = None) 
 
 
 @mcp.tool()
-async def reset_password(user_id: str, send_email: bool = True, ctx: Context = None) -> dict:
+async def reset_password(ctx: Context, user_id: str, send_email: bool = True) -> dict:
     """Resets a user's password in the Okta organization.
 
     This tool resets a user's password and generates a password reset link. Optionally,
