@@ -139,7 +139,11 @@ class OktaAuthManager:
                 logger.debug(f"Response status code: {response.status_code}")
 
                 if response.status_code == 200:
-                    resp_json = response.json()
+                    try:
+                        resp_json = response.json()
+                    except ValueError:
+                        logger.error(f"Non-JSON response from token endpoint: {response.text[:200]}")
+                        return None
                     access_token = resp_json.get("access_token")
 
                     if access_token:
@@ -181,7 +185,11 @@ class OktaAuthManager:
                 logger.debug(f"Response status code: {response.status_code}")
 
                 response.raise_for_status()
-                result = response.json()
+                try:
+                    result = response.json()
+                except ValueError as e:
+                    logger.error(f"Non-JSON response from device authorization endpoint: {response.text[:200]}")
+                    raise RuntimeError(f"Failed to initiate device authorization: {e}")
                 result.update({"start_time": time.time()})
 
                 logger.info("Device authorization initiated successfully")
@@ -214,7 +222,12 @@ class OktaAuthManager:
 
                 try:
                     response = await client.post(token_url, headers=headers, data=data)
-                    resp_json = response.json()
+                    try:
+                        resp_json = response.json()
+                    except ValueError:
+                        logger.warning(f"Non-JSON response during token polling: {response.text[:200]}")
+                        await asyncio.sleep(device_data["interval"])
+                        continue
                     logger.debug(f"Poll response status: {response.status_code}")
 
                     if response.status_code == 200 and "access_token" in resp_json:
@@ -274,7 +287,11 @@ class OktaAuthManager:
                 logger.debug(f"Refresh response status: {response.status_code}")
 
                 if response.status_code == 200:
-                    resp_json = response.json()
+                    try:
+                        resp_json = response.json()
+                    except ValueError:
+                        logger.error(f"Non-JSON response from token endpoint: {response.text[:200]}")
+                        return False
                     keyring.set_password(SERVICE_NAME, "api_token", resp_json["access_token"])
 
                     if "refresh_token" in resp_json:
