@@ -267,14 +267,26 @@ class MockSignInPage:
 class MockOktaResponse:
     """Mock Okta API response object."""
 
-    def __init__(self, has_next: bool = False, next_url: Optional[str] = None):
+    def __init__(self, has_next: bool = False, next_url: Optional[str] = None, next_page_data=None):
         self._has_next = has_next
         self._next = next_url
+        self._next_page_data = next_page_data
+        self._next_called = False
 
     def has_next(self) -> bool:
+        if self._next_called:
+            return False
         return self._has_next
 
     async def next(self):
+        self._next_called = True
+        if self._next_page_data:
+            items, next_response = self._next_page_data
+            self._has_next = next_response._has_next if next_response else False
+            self._next = next_response._next if next_response else None
+            self._next_page_data = next_response._next_page_data if next_response else None
+            self._next_called = False
+            return items, None
         return [], None
 
 
