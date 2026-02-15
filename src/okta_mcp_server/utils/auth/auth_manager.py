@@ -67,7 +67,7 @@ class OktaAuthManager:
 
         if not self.org_url or not self.client_id:
             logger.error("OKTA_ORG_URL and OKTA_CLIENT_ID must be set in environment variables")
-            sys.exit(1)
+            raise RuntimeError("OKTA_ORG_URL and OKTA_CLIENT_ID must be set in environment variables")
 
         if not self.org_url.startswith("https://"):
             self.org_url = "https://" + self.org_url
@@ -191,7 +191,7 @@ class OktaAuthManager:
 
         except httpx.RequestError as e:
             logger.error(f"Failed to initiate device authorization: {e}")
-            sys.exit(1)
+            raise RuntimeError(f"Failed to initiate device authorization: {e}")
 
     async def _poll_for_token(self, device_data):
         """Poll token endpoint until success or timeout."""
@@ -304,7 +304,7 @@ class OktaAuthManager:
                 # - Browserless auth is typically used in server environments where user interaction isn't possible
                 # - Falling back could expose credentials or allow unintended authentication paths
                 # - The choice of auth method should be explicit based on environment configuration
-                sys.exit(1)
+                raise RuntimeError("Browserless authentication failed")
         else:
             logger.info("Starting device flow authentication process")
             device_data = await self._initiate_device_authorization()
@@ -325,7 +325,7 @@ class OktaAuthManager:
                 logger.info("Authentication completed successfully")
             else:
                 logger.error("Authentication failed")
-                sys.exit(1)
+                raise RuntimeError("Authentication failed via device flow")
 
     async def is_valid_token(self, expiry_duration: int = 3600) -> bool:
         """Ensure that a valid token is available. Refresh or re-authenticate if needed."""
