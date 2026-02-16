@@ -51,3 +51,50 @@ class TestGetOktaClient:
 
                 client = await get_okta_client(manager)
                 assert client is not None
+
+    @pytest.mark.asyncio
+    async def test_reauthenticates_on_expired_token(self, monkeypatch):
+        """get_okta_client should re-authenticate when token is expired."""
+        monkeypatch.setenv("OKTA_ORG_URL", "https://test.okta.com")
+        monkeypatch.setenv("OKTA_CLIENT_ID", "test_client_id")
+
+        from okta_mcp_server.utils.auth.auth_manager import OktaAuthManager
+
+        with patch("sys.exit"), patch("keyring.set_password"):
+            manager = OktaAuthManager()
+            manager.is_valid_token = AsyncMock(return_value=False)
+            manager.authenticate = AsyncMock()
+
+            # First call returns None (expired), second call returns new token
+            with patch(
+                "okta_mcp_server.utils.client.keyring.get_password",
+                side_effect=[None, "new_token"],
+            ):
+                from okta_mcp_server.utils.client import get_okta_client
+
+                client = await get_okta_client(manager)
+                assert client is not None
+                manager.authenticate.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_raises_after_reauth_still_no_token(self, monkeypatch):
+        """get_okta_client should raise if token still None after re-authentication."""
+        monkeypatch.setenv("OKTA_ORG_URL", "https://test.okta.com")
+        monkeypatch.setenv("OKTA_CLIENT_ID", "test_client_id")
+
+        from okta_mcp_server.utils.auth.auth_manager import OktaAuthManager
+
+        with patch("sys.exit"), patch("keyring.set_password"):
+            manager = OktaAuthManager()
+            manager.is_valid_token = AsyncMock(return_value=False)
+            manager.authenticate = AsyncMock()
+
+            # Both calls return None
+            with patch(
+                "okta_mcp_server.utils.client.keyring.get_password",
+                return_value=None,
+            ):
+                from okta_mcp_server.utils.client import get_okta_client
+
+                with pytest.raises(RuntimeError, match="No API token available"):
+                    await get_okta_client(manager)
